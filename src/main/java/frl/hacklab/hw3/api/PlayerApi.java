@@ -116,7 +116,7 @@ public class PlayerApi
         }
 
         Player foundPlayer = foundPlayerOpt.get();
-        foundPlayer = foundPlayer.merge(player);
+        foundPlayer = foundPlayer.merge(player, Player.class);
 
         RepositoryResult updateResult = playerRepo.update(foundPlayer, false);
 

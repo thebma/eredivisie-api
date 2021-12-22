@@ -3,6 +3,7 @@ package frl.hacklab.hw3.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import frl.hacklab.hw3.util.Mergeable;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
 public class Team extends Mergeable<Team>
@@ -16,10 +17,7 @@ public class Team extends Mergeable<Team>
     protected Surface FieldSurface = Surface.Onbekend;
     protected int Since = Integer.MIN_VALUE;
 
-    public Team()
-    {
-        super(Team.class);
-    }
+    public Team() { }
 
     public Team(int id)
     {
@@ -29,6 +27,7 @@ public class Team extends Mergeable<Team>
         this.Stadium = "Unknown";
         this.FieldSurface = Surface.Hybride;
     }
+
     public Team(int id, String name, String city, String stadium)
     {
         this.ID = id;

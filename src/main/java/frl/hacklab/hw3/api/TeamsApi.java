@@ -42,8 +42,7 @@ public class TeamsApi
     @GetMapping("/{id}")
     public ResponseEntity<Team> getTeam(@PathVariable int id)
     {
-        Team tempTeam = new Team();
-        tempTeam.setID(id);
+        Team tempTeam = new Team(id);
 
         Optional<Team> team = teamRepo.read(tempTeam);
 
@@ -61,121 +60,143 @@ public class TeamsApi
     @PostMapping("/")
     public ResponseEntity<GenericApiResponse> addTeam(@RequestBody Team team)
     {
-        RepositoryResult creationResult = teamRepo.create(team);
-
-        if(creationResult == RepositoryResult.Created)
+        if(team != null)
         {
-            return new ResponseEntity<>(new GenericApiResponse(), HttpStatus.CREATED);
+            RepositoryResult creationResult = teamRepo.create(team);
+
+            if(creationResult == RepositoryResult.Created)
+            {
+                return new ResponseEntity<>(new GenericApiResponse(), HttpStatus.CREATED);
+            }
+
+            logger.logResult(creationResult, "POST", "Team", "TeamsApi::addTeam",
+                    team.getID() , team.getName()
+            );
+
+            return new ResponseEntity<>(
+                new GenericApiResponse("Error: " + creationResult),
+                HttpStatus.BAD_REQUEST
+            );
         }
-
-        logger.logResult(creationResult, "POST", "Team", "TeamsApi::addTeam",
-                team.getID() , team.getName()
-        );
-
-        return new ResponseEntity<>(
-            new GenericApiResponse("Error: " + creationResult.toString()),
-            HttpStatus.BAD_REQUEST
-        );
+        else
+        {
+            return new ResponseEntity<>(
+                new GenericApiResponse("Error: " + RepositoryResult.NullValue),
+                HttpStatus.BAD_REQUEST
+            );
+        }
     }
 
     @PutMapping("/")
     public ResponseEntity<GenericApiResponse> overwriteTeam(@RequestBody Team team)
     {
-        RepositoryResult updateResult = teamRepo.update(team, true);
-
-        if(updateResult == RepositoryResult.Updated)
+        if (team != null)
         {
-            return ResponseEntity.ok(new GenericApiResponse());
+            RepositoryResult updateResult = teamRepo.update(team, true);
+
+            if(updateResult == RepositoryResult.Updated)
+            {
+                return ResponseEntity.ok(new GenericApiResponse());
+            }
+
+            logger.logResult(updateResult, "PUT", "Team", "TeamsApi::overwriteTeam",
+                team.getID(), team.getName()
+            );
+
+            return new ResponseEntity<>(
+                new GenericApiResponse("Error: " + updateResult),
+                HttpStatus.BAD_REQUEST
+            );
         }
-
-        logger.logResult(updateResult, "PUT", "Team", "TeamsApi::overwriteTeam",
-            team.getID(), team.getName()
-        );
-
-        return new ResponseEntity<>(
-            new GenericApiResponse("Error: " + updateResult.toString()),
-            HttpStatus.BAD_REQUEST
-        );
+        else
+        {
+            return new ResponseEntity<>(
+                new GenericApiResponse("Error: " + RepositoryResult.NullValue),
+                HttpStatus.BAD_REQUEST
+            );
+        }
     }
 
     @PatchMapping("/")
     public ResponseEntity<GenericApiResponse> patchTeam(@RequestBody Team team)
     {
-        Optional<Team> foundTeamOpt = teamRepo.read(team);
-
-        if(foundTeamOpt.isEmpty())
+        if(team != null)
         {
-            logger.error("Could not patch team, because team wasn't found with id: " + team.getID());
+            Optional<Team> foundTeamOpt = teamRepo.read(team);
+
+            if (foundTeamOpt.isEmpty()) {
+                logger.error("Could not patch team, because team wasn't found with id: " + team.getID());
+
+                return new ResponseEntity<>(
+                    new GenericApiResponse("Team could not be found to perform PATCH on."),
+                    HttpStatus.BAD_REQUEST
+                );
+            }
+
+            Team foundTeam = foundTeamOpt.get();
+            foundTeam.merge(team, Team.class);
+
+
+            RepositoryResult updateResult = teamRepo.update(foundTeam, false);
+
+            if (updateResult == RepositoryResult.Updated) {
+                return ResponseEntity.ok(new GenericApiResponse());
+            }
+
+            logger.logResult(updateResult, "PATCH", "Team", "TeamsApi::patchTeam",
+                    team.getID(), team.getName()
+            );
 
             return new ResponseEntity<>(
-                new GenericApiResponse("Team could not be found to perform PATCH on."),
+                new GenericApiResponse("Error: " + updateResult),
                 HttpStatus.BAD_REQUEST
             );
         }
-
-        Team foundTeam = foundTeamOpt.get();
-        foundTeam.merge(team);
-
-        RepositoryResult updateResult = teamRepo.update(foundTeam, false);
-
-        if(updateResult == RepositoryResult.Updated)
+        else
         {
             return new ResponseEntity<>(
-                new GenericApiResponse(),
-                HttpStatus.CREATED
+                new GenericApiResponse("Error: team input was null"),
+                HttpStatus.BAD_REQUEST
             );
         }
-
-        switch(updateResult)
-        {
-            case NotFound:
-                logger.error("Could not find a team id:{} name:{} at PATCH", team.getID(), team.getName());
-                break;
-            case CreationNotAllowed:
-                logger.error("Could not create team via PATCH for team id:{} name{}", team.getID(), team.getName());
-                break;
-            case UpdatePartialNotAllowed:
-                logger.error("Cannot partially update in PATCH for team id:{} name:{}", team.getID(), team.getName());
-                break;
-            case CreatePartial:
-                logger.error("Cannot create a team for PATCH for team id:{} name:{}", team.getID(), team.getName());
-                break;
-        }
-
-        return new ResponseEntity<>(
-            new GenericApiResponse("Error: " + updateResult),
-            HttpStatus.BAD_REQUEST
-        );
     }
 
     @DeleteMapping("/")
     public ResponseEntity<GenericApiResponse> deleteTeam(@RequestBody Team team)
     {
-        Optional<Team> optTeam = teamRepo.read(team);
-
-        if(optTeam.isEmpty())
+        if(team != null)
         {
+            Optional<Team> optTeam = teamRepo.read(team);
+
+            if (optTeam.isEmpty()) {
+                return new ResponseEntity<>(
+                    new GenericApiResponse("Error: Team could not be found to perform DELETE on."),
+                    HttpStatus.BAD_REQUEST
+                );
+            }
+
+            Team foundTeam = optTeam.get();
+            RepositoryResult deletionResult = teamRepo.delete(foundTeam);
+
+            if (deletionResult == RepositoryResult.Deleted) {
+                return ResponseEntity.ok(new GenericApiResponse());
+            }
+
+            logger.logResult(deletionResult, "DELETE", "Team", "TeamsApi::deleteTeam",
+                    team.getID(), team.getName()
+            );
+
             return new ResponseEntity<>(
-                new GenericApiResponse("Team could not be found to perform DELETE on."),
+                new GenericApiResponse("Error: " + deletionResult),
                 HttpStatus.BAD_REQUEST
             );
         }
-
-        Team foundTeam = optTeam.get();
-        RepositoryResult deletionResult = teamRepo.delete(foundTeam);
-
-        if(deletionResult == RepositoryResult.Deleted)
+        else
         {
-            return ResponseEntity.ok(new GenericApiResponse());
+            return new ResponseEntity<>(
+                new GenericApiResponse("Error: team was null"),
+                HttpStatus.BAD_REQUEST
+            );
         }
-
-        logger.logResult(deletionResult, "DELETE", "Team", "TeamsApi::deleteTeam",
-                team.getID(), team.getName()
-        );
-
-        return new ResponseEntity<>(
-            new GenericApiResponse("Team could not be deleted."),
-            HttpStatus.BAD_REQUEST
-        );
     }
 }

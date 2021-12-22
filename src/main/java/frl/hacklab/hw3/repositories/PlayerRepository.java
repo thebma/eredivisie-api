@@ -22,7 +22,7 @@ public class PlayerRepository
     @Override
     public RepositoryResult create(Player player)
     {
-        if(player.hasAllFields("id"))
+        if(player.hasAllFields(Player.class,"id"))
         {
             player.setID(super.nextId());
             super.values.add(player);
@@ -46,7 +46,7 @@ public class PlayerRepository
     @Override
     public RepositoryResult update(Player player, boolean onlyAllowFullUpdates)
     {
-        if(onlyAllowFullUpdates && player.hasEmptyFields())
+        if(onlyAllowFullUpdates && player.hasEmptyFields(Player.class))
         {
             //TODO: Logger
             System.out.println("Tried partially updating a player when its explicitly not allowed to do so.");

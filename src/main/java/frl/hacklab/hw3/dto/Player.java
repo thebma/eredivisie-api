@@ -17,10 +17,4 @@ public class Player extends Mergeable<Player>
 
     @JsonProperty("position")
     protected Position FieldPosition = Position.Unknown;
-
-    public Player()
-    {
-        super(Player.class);
-    }
-
 }

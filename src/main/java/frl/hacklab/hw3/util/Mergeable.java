@@ -9,16 +9,7 @@ import java.util.Locale;
 //TODO(bma, 08 dec 2021): Use logging for this class.
 public class Mergeable<T>
 {
-    private final Class<T> concreteType;
-
-    //NOTE(bma, 22 nov 2021): Lombok requires a default constructor.
-    public Mergeable() { concreteType = null; }
-    public Mergeable(Class<T> concreteType)
-    {
-        this.concreteType = concreteType;
-    }
-
-    private T instantiate()
+    private T instantiate(Class<T> concreteType)
     {
         try
         {
@@ -59,7 +50,7 @@ public class Mergeable<T>
         return null;
     }
 
-    public boolean hasEmptyFields(Object... except)
+    public boolean hasEmptyFields(Class<T> concreteType, Object... except)
     {
         HashSet<String> exceptions = new HashSet<>();
         exceptions.add("concretetype");
@@ -69,7 +60,7 @@ public class Mergeable<T>
             exceptions.add(ex.toString());
         }
 
-        T defaultT = instantiate();
+        T defaultT = instantiate(concreteType);
         T selfT = (T)this;
 
         if(defaultT == null) return true;
@@ -121,16 +112,16 @@ public class Mergeable<T>
         }
     }
 
-    public boolean hasAllFields(Object... except)
+    public boolean hasAllFields(Class<T> concreteType, Object... except)
     {
-        return !hasEmptyFields(except);
+        return !hasEmptyFields(concreteType, except);
     }
 
-    public T merge(T other)
+    public T merge(T other, Class<T> concreteType)
     {
         try
         {
-            T defaultT = instantiate();
+            T defaultT = instantiate(concreteType);
 
             Field[] defaultFields = defaultT.getClass().getDeclaredFields();
             Field[] selfFields = concreteType != null ? concreteType.getDeclaredFields() : new Field[0];
@@ -164,7 +155,7 @@ public class Mergeable<T>
         }
         catch(IllegalAccessException | NullPointerException e)
         {
-            System.out.println("Error when trying to merge.");
+            System.out.println("Error when trying to merge." + e);
         }
 
         return (T)this;

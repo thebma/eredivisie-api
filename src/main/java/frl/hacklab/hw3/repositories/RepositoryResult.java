@@ -42,5 +42,10 @@ public enum RepositoryResult
     /**
      * For those that were to lazy to implement all methods.
      */
-    NotImplemented
+    NotImplemented,
+
+    /**
+     *  To indicate that the operation encountered a null value as input.
+     */
+    NullValue
 }

@@ -27,7 +27,7 @@ public class TeamRepository
     @Override
     public RepositoryResult create(Team team)
     {
-        if(team.hasAllFields("id"))
+        if(team.hasAllFields(Team.class,"id"))
         {
             team.setID(super.nextId());
             values.add(team);
@@ -50,7 +50,7 @@ public class TeamRepository
     @Override
     public RepositoryResult update(Team team, boolean onlyAllowFullUpdates)
     {
-        if(onlyAllowFullUpdates && team.hasEmptyFields())
+        if(onlyAllowFullUpdates && team.hasEmptyFields(Team.class))
         {
             //Todo: logger
             System.out.println("Tried partially updating a team when its explicitly not allowed to do so.");

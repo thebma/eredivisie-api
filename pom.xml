@@ -63,6 +63,43 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+			<plugin>
+				<groupId>org.pitest</groupId>
+				<artifactId>pitest-maven</artifactId>
+				<version>1.7.3</version>
+				<dependencies>
+					<dependency>
+						<groupId>org.pitest</groupId>
+						<artifactId>pitest-junit5-plugin</artifactId>
+						<version>0.8</version>
+					</dependency>
+				</dependencies>
+				<configuration>
+					<mutators>
+						<mutator>ALL</mutator>
+					</mutators>
+					<outputFormats>
+						<param>HTML</param>
+						<param>XML</param>
+					</outputFormats>
+					<exportLineCoverage>true</exportLineCoverage>
+					<targetClasses>
+						<param>frl.hacklab.hw3.api.*</param>
+					</targetClasses>
+					<targetTests>
+						<param>frl.hacklab.hw3.*</param>
+					</targetTests>
+					<avoidCallsTo>
+						<avoidCallsTo>java.util.logging</avoidCallsTo>
+						<avoidCallsTo>org.apache.log4j</avoidCallsTo>
+						<avoidCallsTo>org.slf4j</avoidCallsTo>
+						<avoidCallsTo>org.apache.commons.logging</avoidCallsTo>
+						<avoidCallsTo>frl.hacklab.hw3.logging</avoidCallsTo>
+					</avoidCallsTo>
+					<timeoutConstant>30000</timeoutConstant>
+					<threads>3</threads>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 </project>
